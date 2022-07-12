@@ -1,5 +1,11 @@
-import { isWhite } from "./figureRules";
-
+import { getByID, isWhite } from "./figureRules";
+import { Figure } from "./figures/Figure";
+import { Queen } from "./figures/Queen";
+import { Rook } from "./figures/Rook";
+import { Bishop } from "./figures/Bishop";
+import { Pawn } from "./figures/Pawn";
+import { King } from "./figures/King";
+import { Knight } from "./figures/Knight";
 
 //for colors
 let odd: boolean = false;
@@ -10,7 +16,11 @@ export let playsWhite: boolean = false;
 const figureSize: number = 67.5;
 
 const board = document.getElementById("board");
-const columns=["a","b","c","d","e","f","g","h"];
+export const columns=["a","b","c","d","e","f","g","h"];
+export let chessPieces: Figure[] = [];
+
+//gets the current figure that is being dragged
+let draggedFigure: Figure | null = null;
 
 //get the sprites image
 const img: HTMLImageElement = document.createElement("img");
@@ -38,6 +48,8 @@ for (let i = 8; i > 0; i--) {
   }
 }
 setPieces();
+disablePieces(false);
+
 function setSize(
   element: any,
   row: number,
@@ -74,7 +86,7 @@ function createSpan(name: string) {
   return temp;
 }
 function handleDragStart(e: any) {
-
+  draggedFigure = getByID(e.target.id)!;
   e.target.classList.add("dragging");
 }
 function handleDragging(e: any) {
@@ -83,12 +95,17 @@ function handleDragging(e: any) {
 }
 function handleDragEnd(e: any) {
   e.preventDefault();
- 
+  draggedFigure!.htmlEl.classList.remove("dragging");
   const square: Element | null = document.elementFromPoint(
     e.clientX,
     e.clientY
   );
-
+  if (
+    (whitePlayerTurn && !isWhite(draggedFigure!.id)) ||
+    (!whitePlayerTurn && isWhite(draggedFigure!.id))
+  ) {
+    return;
+  }
   if (square == null || square!.classList.contains("root")) {
     return;
   }
@@ -100,6 +117,13 @@ function handleDragEnd(e: any) {
     (whitePlayerTurn ? "white " : "black ") +
       "player cannot play now, it's the other player turn"
   );
+  console.log("moving figure " + draggedFigure!.id + " to " + square!.id);
+
+  const tempPos = draggedFigure!.move(square!.id);
+
+  if (draggedFigure!.currentPosition === tempPos) return;
+  else draggedFigure!.currentPosition = tempPos;
+
   whitePlayerTurn = !whitePlayerTurn;
   return;
 
@@ -114,6 +138,20 @@ function removeEvents(el: HTMLElement) {
   el.removeEventListener("dragstart", handleDragStart);
   el.removeEventListener("dragover", handleDragging);
   el.removeEventListener("dragend", handleDragEnd);
+}
+function disablePieces(isWhite: boolean) {
+  chessPieces
+    .filter((p) => p.isWhite === !isWhite)
+    .forEach((piece) => {
+      piece.htmlEl.setAttribute("draggable", true);
+      piece.htmlEl.style.cursor = "pointer";
+    });
+  chessPieces
+    .filter((p) => p.isWhite === isWhite)
+    .forEach((piece) => {
+      piece.htmlEl.setAttribute("draggable", false);
+      piece.htmlEl.style.cursor = "initial";
+    });
 }
 //set all sprites
 function setPieces() {
@@ -144,6 +182,8 @@ function setPieces() {
   getKnights();
   getBishops();
   getKings();
+  console.log(chessPieces);
+
 }
 //--------------------------------------------
 //getting different sprites
@@ -158,7 +198,12 @@ function getQueens() {
     setSize(whiteQueen, 0, 1, "d8", "150px", "350px");
     setSize(blackQueen, 1, 1, "d1", "150px", "350px");
   }
-  
+  chessPieces.push(
+    new Queen(whiteQueen, whiteQueen.id, true, whiteQueen.parentElement!.id)
+  );
+  chessPieces.push(
+    new Queen(blackQueen, blackQueen.id, false, blackQueen.parentElement!.id)
+  );
 }
 function getPawns() {
   const size = 50;
@@ -200,6 +245,12 @@ function getPawns() {
         "300px"
       );
     }
+    chessPieces.push(
+      new Pawn(whitePawn, whitePawn.id, true, whitePawn.parentElement!.id)
+    );
+    chessPieces.push(
+      new Pawn(blackPawn, blackPawn.id, false, blackPawn.parentElement!.id)
+    );
    
   }
 }
@@ -213,7 +264,12 @@ function getKings() {
     setSize(whiteKing, 0, 0, "e8", "150px", "0px");
     setSize(blackKing, 1, 0, "e1", "150px", "350px");
   }
- 
+  chessPieces.push(
+    new King(whiteKing, whiteKing.id, true, whiteKing.parentElement!.id)
+  );
+  chessPieces.push(
+    new King(blackKing, blackKing.id, false, blackKing.parentElement!.id)
+  );
 }
 function getRooks() {
   const whiteRook1: Element = createSpan("wRook1");
@@ -232,7 +288,18 @@ function getRooks() {
     setSize(blackRook1, 1, 4, "a1", "350px", "350px");
     setSize(blackRook2, 1, 4, "h1", "0px", "350px");
   }
- 
+  chessPieces.push(
+    new Rook(whiteRook1, whiteRook1.id, true, whiteRook1.parentElement!.id)
+  );
+  chessPieces.push(
+    new Rook(blackRook1, blackRook1.id, false, blackRook1.parentElement!.id)
+  );
+  chessPieces.push(
+    new Rook(whiteRook2, whiteRook2.id, true, whiteRook2.parentElement!.id)
+  );
+  chessPieces.push(
+    new Rook(blackRook2, blackRook2.id, false, blackRook2.parentElement!.id)
+  );
 }
 function getKnights() {
   const whiteKnight1: Element = createSpan("wKnight1");
@@ -251,7 +318,38 @@ function getKnights() {
     setSize(whiteKnight1, 0, 3, "b8", "50px", "0px");
     setSize(whiteKnight2, 0, 3, "g8", "300px", "0px");
   }
-  
+  chessPieces.push(
+    new Knight(
+      whiteKnight1,
+      whiteKnight1.id,
+      true,
+      whiteKnight1.parentElement!.id
+    )
+  );
+  chessPieces.push(
+    new Knight(
+      blackKnight1,
+      blackKnight1.id,
+      false,
+      blackKnight1.parentElement!.id
+    )
+  );
+  chessPieces.push(
+    new Knight(
+      whiteKnight2,
+      whiteKnight2.id,
+      true,
+      whiteKnight2.parentElement!.id
+    )
+  );
+  chessPieces.push(
+    new Knight(
+      blackKnight2,
+      blackKnight2.id,
+      false,
+      blackKnight2.parentElement!.id
+    )
+  );
 }
 function getBishops() {
   const whiteBishop1: Element = createSpan("wBishop1");
@@ -270,7 +368,38 @@ function getBishops() {
     setSize(whiteBishop1, 0, 2, "c8", "100px", "0px");
     setSize(whiteBishop2, 0, 2, "f8", "250px", "0px");
   }
-  
+  chessPieces.push(
+    new Bishop(
+      whiteBishop1,
+      whiteBishop1.id,
+      true,
+      whiteBishop1.parentElement!.id
+    )
+  );
+  chessPieces.push(
+    new Bishop(
+      blackBishop1,
+      blackBishop1.id,
+      false,
+      blackBishop1.parentElement!.id
+    )
+  );
+  chessPieces.push(
+    new Bishop(
+      whiteBishop2,
+      whiteBishop2.id,
+      true,
+      whiteBishop2.parentElement!.id
+    )
+  );
+  chessPieces.push(
+    new Bishop(
+      blackBishop2,
+      blackBishop2.id,
+      false,
+      blackBishop2.parentElement!.id
+    )
+  );
 }
 //---------------------------------------------
 //sets the board depending on what the user chose to play as
