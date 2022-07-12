@@ -1,6 +1,5 @@
-
-import {Figure} from "./figures/Figure";
-import { chessPieces, columns } from "./chessBoard";
+import { Figure } from "./figures/Figure";
+import { chessPieces, ChessBoard } from "./chessBoard";
 export function moveElement(el: Element, source: string, dest: string) {
   const square: Element = document.getElementById(dest)!;
   document.getElementById(el.id)!.parentElement?.removeChild(el);
@@ -35,8 +34,8 @@ export function eatFigure(id: string) {
   _.htmlEl.parentElement.removeChild(_.htmlEl);
 }
 export function isDiagonalMove(fig: Figure, dest: string): boolean {
-  const destRankIndex: number = columns.indexOf(dest[0]);
-  const startRankIndex: number = columns.indexOf(
+  const destRankIndex: number = ChessBoard.columns.indexOf(dest[0]);
+  const startRankIndex: number = ChessBoard.columns.indexOf(
     fig.currentPosition[0]
   );
   return (
@@ -52,10 +51,10 @@ export function isStraightMove(fig: Figure, dest: string): boolean {
 }
 export function isLMove(fig: Figure, dest: string): boolean {
   const rank: number = parseInt(fig.currentPosition[1]);
-  const file: number = columns.indexOf(fig.currentPosition[0]);
+  const file: number = ChessBoard.columns.indexOf(fig.currentPosition[0]);
 
   const destRank: number = parseInt(dest[1]);
-  const destFile: number = columns.indexOf(dest[0]);
+  const destFile: number = ChessBoard.columns.indexOf(dest[0]);
 
   //upwards left and right
   if (Math.abs(destRank - rank) === 2 && Math.abs(destFile - file) === 1) {
@@ -75,8 +74,8 @@ export function areSameColor(fig1: Figure, fig2: Figure) {
 export function kingMoved(fig: Figure, dest: string) {
   let oneSquare: boolean =
     Math.abs(
-      columns.indexOf(fig.currentPosition[0]) -
-        columns.indexOf(dest[0])
+      ChessBoard.columns.indexOf(fig.currentPosition[0]) -
+        ChessBoard.columns.indexOf(dest[0])
     ) === 1 ||
     Math.abs(parseInt(dest[1]) - parseInt(fig.currentPosition[1])) === 1;
 
@@ -103,8 +102,8 @@ export function pawnMoved(fig: Figure, dest: string): string {
       return "straight";
   }
   let fileDistance =
-    columns.indexOf(dest[0]) -
-    columns.indexOf(fig.currentPosition[0]);
+    ChessBoard.columns.indexOf(dest[0]) -
+    ChessBoard.columns.indexOf(fig.currentPosition[0]);
   if (
     (Math.abs(fileDistance) === 1 && isWhite(fig.id) && rankDistance === 1) ||
     (Math.abs(fileDistance) === 1 && !isWhite(fig.id) && rankDistance === -1)

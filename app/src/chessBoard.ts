@@ -6,6 +6,8 @@ import { Bishop } from "./figures/Bishop";
 import { Pawn } from "./figures/Pawn";
 import { King } from "./figures/King";
 import { Knight } from "./figures/Knight";
+import { Player } from "./models/Player";
+import { Game } from "./models/Game";
 
 //for colors
 let odd: boolean = false;
@@ -16,7 +18,6 @@ export let playsWhite: boolean = false;
 const figureSize: number = 67.5;
 
 const board = document.getElementById("board");
-export const columns=["a","b","c","d","e","f","g","h"];
 export let chessPieces: Figure[] = [];
 
 //gets the current figure that is being dragged
@@ -26,7 +27,32 @@ let draggedFigure: Figure | null = null;
 const img: HTMLImageElement = document.createElement("img");
 const imgSource: string = "assets/pieces.png";
 img.src = imgSource;
- 
+
+export class ChessBoard {
+  private static instance: ChessBoard;
+  public static columns = ["a", "b", "c", "d", "e", "f", "g", "h"];
+  public static player: Player;
+  public static game: Game;
+  private constructor() {}
+
+  public static getInstance(): ChessBoard {
+    if (!ChessBoard.instance) {
+      ChessBoard.instance = new ChessBoard();
+      this.player = { id: 0, playsWhite: true, points: 0, myTurn: true };
+    }
+
+    return ChessBoard.instance;
+  }
+
+  public startGame(game: Game): void {
+    ChessBoard.player = game.players[0];
+    ChessBoard.game = game;
+    //start timer for the white player
+    //he can now move his pieces, but not the black ones
+    //remove draggable from black pieces
+    disablePieces(false);
+  }
+}
 //-------------------------------------------------------------------------
 playsWhite = true;
 
@@ -39,7 +65,7 @@ for (let i = 8; i > 0; i--) {
   for (let j = 1; j < 9; j++) {
     const div: Element = document.createElement("div");
     div.classList.add("square");
-    div.id = `${columns[j - 1]}${i}`;
+    div.id = `${ChessBoard.columns[j - 1]}${i}`;
 
     if (odd) div.classList.add("white");
     else div.classList.add("black");
@@ -112,7 +138,7 @@ function handleDragEnd(e: any) {
   // ChessBoard.game.players[0].myTurn = !ChessBoard.game.players[0].myTurn;
   // ChessBoard.game.players[1].myTurn = !ChessBoard.game.players[1].myTurn;
   // square.appendChild(draggedFigure);
-  
+
   console.log(
     (whitePlayerTurn ? "white " : "black ") +
       "player cannot play now, it's the other player turn"
@@ -165,12 +191,12 @@ function setPieces() {
     if (playsWhite) {
       for (let j = 1; j < 9; j++) {
         //reverse ids if playsWhite changed
-        divs[br].id = `${columns[j - 1]}${i}`;
+        divs[br].id = `${ChessBoard.columns[j - 1]}${i}`;
         br++;
       }
     } else {
       for (let j = 8; j > 0; j--) {
-        divs[br].id = `${columns[j - 1]}${i}`;
+        divs[br].id = `${ChessBoard.columns[j - 1]}${i}`;
         br++;
       }
     }
@@ -183,7 +209,6 @@ function setPieces() {
   getBishops();
   getKings();
   console.log(chessPieces);
-
 }
 //--------------------------------------------
 //getting different sprites
@@ -215,7 +240,7 @@ function getPawns() {
         whitePawn,
         0,
         5,
-        "" + columns[i - 1] + 2,
+        "" + ChessBoard.columns[i - 1] + 2,
         size * i + "px",
         "300px"
       );
@@ -223,7 +248,7 @@ function getPawns() {
         blackPawn,
         1,
         5,
-        "" + columns[i - 1] + 7,
+        "" + ChessBoard.columns[i - 1] + 7,
         size * i + "px",
         "50px"
       );
@@ -232,7 +257,7 @@ function getPawns() {
         whitePawn,
         0,
         5,
-        "" + columns[i - 1] + 7,
+        "" + ChessBoard.columns[i - 1] + 7,
         size * i + "px",
         "50px"
       );
@@ -240,7 +265,7 @@ function getPawns() {
         blackPawn,
         1,
         5,
-        "" + columns[i - 1] + 2,
+        "" + ChessBoard.columns[i - 1] + 2,
         size * i + "px",
         "300px"
       );
@@ -251,7 +276,6 @@ function getPawns() {
     chessPieces.push(
       new Pawn(blackPawn, blackPawn.id, false, blackPawn.parentElement!.id)
     );
-   
   }
 }
 function getKings() {
