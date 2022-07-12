@@ -1,0 +1,28 @@
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  grid-column-gap: 0px;
+  grid-row-gap: 0px;
+  max-width: 540px;
+  margin: auto;
+  outline: 1px solid black;
+}
+
+.board .square {
+  width: 67.5px;
+  height: 67.5px;
+}
+
+.square ::hover {
+  cursor: pointer;
+}
+
+.black {
+  background-color: #8a5c20;
+}
+
+.white {
+  background-color: white;
+}
+
