@@ -1,7 +1,5 @@
 import { Alias, Figure, tryMove } from "./Figure";
 import {
-  isStraightMove,
-  isDiagonalMove,
   isChessPiece,
   checkPossibleDiagonals,
   checkPossibleStraights,

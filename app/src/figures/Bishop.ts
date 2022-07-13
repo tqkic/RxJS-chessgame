@@ -1,5 +1,5 @@
 import { Alias, Figure, tryMove } from "./Figure";
-import { isDiagonalMove, isChessPiece } from "../figureRules";
+import { checkPossibleDiagonals, isChessPiece } from "../figureRules";
 
 export class Bishop implements Figure {
   id: string;
@@ -30,6 +30,11 @@ export class Bishop implements Figure {
     //if it's just a regular diagonal move and there's nothing on the destination square, just move
   }
   checkPossibleDestinations(): string[] {
-    throw new Error("Method not implemented.");
+    //while there's not an element in one direction add square to array
+    //while
+    //ako je na f4, smanji mu pocetak odakle se gleda tako da razlika izmedju 4 i 1 bude ista kao za indeksi kolona
+    //tako da postavis na najleviju mogucu poziciju
+    let possibleSquares: string[] = [];
+    return checkPossibleDiagonals(this, possibleSquares);
   }
 }

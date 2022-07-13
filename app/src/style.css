@@ -25,4 +25,10 @@
 .white {
   background-color: white;
 }
-
+.dragging {
+  opacity: 0.5;
+}
+.potential-square {
+  background-color: #67c27f !important;
+  outline: 1px solid black;
+}

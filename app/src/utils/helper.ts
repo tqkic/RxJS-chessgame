@@ -58,6 +58,8 @@ export function generateMoveString(
   ChessBoard.game.movesHistory.push(move);
   return move;
 }
+//FEN notation for starting or continuing the game given the certain moment
+export function getFENPositions(fen: string) {}
 
 export type SpecialMove =
   | "castle"
@@ -65,4 +67,5 @@ export type SpecialMove =
   | "promotionQ"
   | "promotionN"
   | null;
+
 export type CheckType = "check" | "check-mate" | null;

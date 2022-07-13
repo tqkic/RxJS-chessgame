@@ -1,5 +1,7 @@
+import { ChessBoard, chessPieces } from "./chessBoard";
 import { Figure } from "./figures/Figure";
-import { chessPieces, ChessBoard } from "./chessBoard";
+import { Pawn } from "./figures/Pawn";
+
 export function moveElement(el: Element, source: string, dest: string) {
   const square: Element = document.getElementById(dest)!;
   document.getElementById(el.id)!.parentElement?.removeChild(el);
@@ -19,18 +21,11 @@ export function isKingInCheck(king: Element) {
 export function onSameFile(source: string, destination: string) {
   return source[0] === destination[0];
 }
-export function getByID(id: string) {
-  return chessPieces.find((e) => e.id === id);
-}
 export function onSameRank(source: string, destination: string) {
   return source[1] === destination[1];
 }
-export function isChessPiece(id: string) {
-  return !document.getElementById(id).classList.contains("square");
-}
-export function eatFigure(id: string) {
-  const _: Figure = getByID(id);
-  _.htmlEl.parentElement.removeChild(_.htmlEl);
+export function getByID(id: string) {
+  return chessPieces.find((e) => e.id === id);
 }
 export function isDiagonalMove(fig: Figure, dest: string): boolean {
   const destRankIndex: number = ChessBoard.columns.indexOf(dest[0]);
@@ -66,9 +61,17 @@ export function isLMove(fig: Figure, dest: string): boolean {
   }
   return false;
 }
+
+export function eatFigure(id: string) {
+  const _: Figure = getByID(id);
+  _.htmlEl.parentElement.removeChild(_.htmlEl);
+}
 export function areSameColor(fig1: Figure, fig2: Figure) {
   if (!fig2) return false;
   return fig1.isWhite === fig2.isWhite;
+}
+export function isChessPiece(id: string) {
+  return !document.getElementById(id).classList.contains("square");
 }
 export function kingMoved(fig: Figure, dest: string) {
   let oneSquare: boolean =
@@ -81,7 +84,6 @@ export function kingMoved(fig: Figure, dest: string) {
   return (isDiagonalMove(fig, dest) || isStraightMove(fig, dest)) && oneSquare;
 }
 export function pawnMoved(fig: Figure, dest: string): string {
-  let oneSquare: boolean = false;
   let rankDistance = parseInt(dest[1]) - parseInt(fig.currentPosition[1]);
   if (onSameFile(fig.currentPosition, dest)) {
     if (
@@ -97,8 +99,10 @@ export function pawnMoved(fig: Figure, dest: string): string {
       (rankDistance === -2 &&
         !isWhite(fig.id) &&
         fig.currentPosition[1] === "7")
-    )
+    ) {
+      ChessBoard.game.lastPossibleEP = dest;
       return "straight";
+    }
   }
   let fileDistance =
     ChessBoard.columns.indexOf(dest[0]) -
@@ -110,6 +114,7 @@ export function pawnMoved(fig: Figure, dest: string): string {
     return "diagonal";
   else return "";
 }
+
 export function isEnPassant(fig: Figure, dest: string): string | null {
   //if pawn moved to the same file as the last en passant candidate
   if (ChessBoard.game.lastPossibleEP[0] === dest[0]) {

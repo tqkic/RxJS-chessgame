@@ -7,22 +7,26 @@ import { Pawn } from "./figures/Pawn";
 import { King } from "./figures/King";
 import { Knight } from "./figures/Knight";
 import { Player } from "./models/Player";
-import { Game } from "./models/Game";
 import { getGameByID } from "./utils/http-utils";
+import { Game } from "./models/Game";
+
 //for colors
 let odd: boolean = false;
 let whitePlayerTurn: boolean = true;
-
-export let playsWhite: boolean = false;
-//fixed size of pieces
-const figureSize: number = 67.5;
 let potentialSquares: string[] = [];
-
-const board = document.getElementById("board");
+export let playsWhite: boolean = false;
+const figureSize: number = 67.5;
+//fixed size of pieces
 export let chessPieces: Figure[] = [];
+
+//figures that are going to be eaten
+let eatenPieces: Figure[] = [];
+const board = document.getElementById("board");
 
 //gets the current figure that is being dragged
 let draggedFigure: Figure | null = null;
+
+//for files
 
 //get the sprites image
 const img: HTMLImageElement = document.createElement("img");
@@ -30,7 +34,7 @@ const imgSource: string = "assets/pieces.png";
 img.src = imgSource;
 
 getGameByID(1).subscribe((game) => console.log(game));
-
+//singleton class, creating only one instance through the app life cycle
 export class ChessBoard {
   private static instance: ChessBoard;
   public static columns = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -77,8 +81,6 @@ for (let i = 8; i > 0; i--) {
   }
 }
 setPieces();
-disablePieces(false);
-
 function setSize(
   element: any,
   row: number,
@@ -129,9 +131,8 @@ function handleDragging(e: any) {
 function handleDragEnd(e: any) {
   e.preventDefault();
   draggedFigure!.htmlEl.classList.remove("dragging");
-  const square: Element | null = document.elementFromPoint(
-    e.clientX,
-    e.clientY
+  potentialSquares.forEach((sqr) =>
+    document.getElementById(sqr).classList.remove("potential-square")
   );
   if (
     (whitePlayerTurn && !isWhite(draggedFigure!.id)) ||
@@ -139,17 +140,17 @@ function handleDragEnd(e: any) {
   ) {
     return;
   }
+  const square: Element | null = document.elementFromPoint(
+    e.clientX,
+    e.clientY
+  );
+
   if (square == null || square!.classList.contains("root")) {
     return;
   }
   // ChessBoard.game.players[0].myTurn = !ChessBoard.game.players[0].myTurn;
   // ChessBoard.game.players[1].myTurn = !ChessBoard.game.players[1].myTurn;
   // square.appendChild(draggedFigure);
-
-  console.log(
-    (whitePlayerTurn ? "white " : "black ") +
-      "player cannot play now, it's the other player turn"
-  );
   console.log("moving figure " + draggedFigure!.id + " to " + square!.id);
 
   const tempPos = draggedFigure!.move(square!.id, potentialSquares);
@@ -157,6 +158,11 @@ function handleDragEnd(e: any) {
   if (draggedFigure!.currentPosition === tempPos) return;
   else draggedFigure!.currentPosition = tempPos;
 
+  disablePieces(whitePlayerTurn);
+  console.log(
+    (whitePlayerTurn ? "white " : "black ") +
+      "player cannot play now, it's the other player turn"
+  );
   whitePlayerTurn = !whitePlayerTurn;
   console.log(ChessBoard.game.movesHistory);
 
@@ -196,14 +202,16 @@ function setPieces() {
   const divs: HTMLCollection = document.getElementsByClassName("square");
   let br = 0;
 
-  for (let i = 8; i > 0; i--) {
-    if (playsWhite) {
+  if (playsWhite) {
+    for (let i = 8; i > 0; i--) {
       for (let j = 1; j < 9; j++) {
         //reverse ids if playsWhite changed
         divs[br].id = `${ChessBoard.columns[j - 1]}${i}`;
         br++;
       }
-    } else {
+    }
+  } else {
+    for (let i = 1; i < 9; i++) {
       for (let j = 8; j > 0; j--) {
         divs[br].id = `${ChessBoard.columns[j - 1]}${i}`;
         br++;
@@ -229,8 +237,8 @@ function getQueens() {
     setSize(whiteQueen, 0, 1, "d1", "150px", "350px");
     setSize(blackQueen, 1, 1, "d8", "150px", "0px");
   } else {
-    setSize(whiteQueen, 0, 1, "d8", "150px", "350px");
-    setSize(blackQueen, 1, 1, "d1", "150px", "350px");
+    setSize(whiteQueen, 0, 1, "d1", "150px", "350px");
+    setSize(blackQueen, 1, 1, "d8", "150px", "350px");
   }
   chessPieces.push(
     new Queen(whiteQueen, whiteQueen.id, true, whiteQueen.parentElement!.id)
@@ -266,7 +274,7 @@ function getPawns() {
         whitePawn,
         0,
         5,
-        "" + ChessBoard.columns[i - 1] + 7,
+        "" + ChessBoard.columns[i - 1] + 2,
         size * i + "px",
         "50px"
       );
@@ -274,7 +282,7 @@ function getPawns() {
         blackPawn,
         1,
         5,
-        "" + ChessBoard.columns[i - 1] + 2,
+        "" + ChessBoard.columns[i - 1] + 7,
         size * i + "px",
         "300px"
       );
@@ -294,8 +302,8 @@ function getKings() {
     setSize(whiteKing, 0, 0, "e1", "200px", "350px");
     setSize(blackKing, 1, 0, "e8", "200px", "0px");
   } else {
-    setSize(whiteKing, 0, 0, "e8", "150px", "0px");
-    setSize(blackKing, 1, 0, "e1", "150px", "350px");
+    setSize(whiteKing, 0, 0, "e1", "150px", "0px");
+    setSize(blackKing, 1, 0, "e8", "150px", "350px");
   }
   chessPieces.push(
     new King(whiteKing, whiteKing.id, true, whiteKing.parentElement!.id)
@@ -316,10 +324,10 @@ function getRooks() {
     setSize(blackRook1, 1, 4, "a8", "0px", "0px");
     setSize(blackRook2, 1, 4, "h8", "350px", "0px");
   } else {
-    setSize(whiteRook1, 0, 4, "a8", "0px", "0px");
-    setSize(whiteRook2, 0, 4, "h8", "350px", "0px");
-    setSize(blackRook1, 1, 4, "a1", "350px", "350px");
-    setSize(blackRook2, 1, 4, "h1", "0px", "350px");
+    setSize(whiteRook1, 0, 4, "a1", "0px", "0px");
+    setSize(whiteRook2, 0, 4, "h1", "350px", "0px");
+    setSize(blackRook1, 1, 4, "a8", "350px", "350px");
+    setSize(blackRook2, 1, 4, "h8", "0px", "350px");
   }
   chessPieces.push(
     new Rook(whiteRook1, whiteRook1.id, true, whiteRook1.parentElement!.id)
@@ -346,10 +354,10 @@ function getKnights() {
     setSize(blackKnight1, 1, 3, "b8", "50px", "0px");
     setSize(blackKnight2, 1, 3, "g8", "300px", "0px");
   } else {
-    setSize(blackKnight2, 1, 3, "g1", "50px", "300px");
-    setSize(blackKnight1, 1, 3, "b1", "300px", "0px");
-    setSize(whiteKnight1, 0, 3, "b8", "50px", "0px");
-    setSize(whiteKnight2, 0, 3, "g8", "300px", "0px");
+    setSize(blackKnight2, 1, 3, "g8", "50px", "300px");
+    setSize(blackKnight1, 1, 3, "b8", "300px", "0px");
+    setSize(whiteKnight1, 0, 3, "b1", "50px", "0px");
+    setSize(whiteKnight2, 0, 3, "g1", "300px", "0px");
   }
   chessPieces.push(
     new Knight(
@@ -396,10 +404,10 @@ function getBishops() {
     setSize(blackBishop1, 1, 2, "c8", "100px", "0px");
     setSize(blackBishop2, 1, 2, "f8", "250px", "0px");
   } else {
-    setSize(blackBishop2, 1, 2, "f1", "100px", "350px");
-    setSize(blackBishop1, 1, 2, "c1", "250px", "350px");
-    setSize(whiteBishop1, 0, 2, "c8", "100px", "0px");
-    setSize(whiteBishop2, 0, 2, "f8", "250px", "0px");
+    setSize(blackBishop2, 1, 2, "f8", "100px", "350px");
+    setSize(blackBishop1, 1, 2, "c8", "250px", "350px");
+    setSize(whiteBishop1, 0, 2, "c1", "100px", "0px");
+    setSize(whiteBishop2, 0, 2, "f1", "250px", "0px");
   }
   chessPieces.push(
     new Bishop(
@@ -462,5 +470,6 @@ export function setRandomPiece() {
 }
 //reset all moved figures
 function resetFigures() {
+  chessPieces = [];
   document.querySelectorAll("div.square > span").forEach((el) => el.remove());
 }
