@@ -1,10 +1,11 @@
-import { Figure, tryMove } from "./Figure";
+import { Alias, Figure, tryMove } from "./Figure";
 import { isChessPiece, moveElement, pawnMoved } from "../figureRules";
 
 export class Pawn implements Figure {
   id: string;
   isWhite: boolean;
   readonly weight: number;
+  readonly alias: Alias;
   currentPosition: string;
   htmlEl: Element;
 
@@ -16,7 +17,8 @@ export class Pawn implements Figure {
   ) {
     this.id = id;
     this.isWhite = isWhite;
-    this.weight = 1;
+    this.weight = 10;
+    this.alias = "P";
     this.currentPosition = currentPos;
     this.htmlEl = htmlEl;
   }
@@ -40,7 +42,7 @@ export class Pawn implements Figure {
 
     return this.currentPosition;
   }
-  checkPossibleDestinations(fig: Figure): string[] {
+  checkPossibleDestinations(): string[] {
     //get current position
 
     //calculate if there's something innetween

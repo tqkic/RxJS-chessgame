@@ -28,7 +28,6 @@ export function onSameRank(source: string, destination: string) {
 export function isChessPiece(id: string) {
   return !document.getElementById(id).classList.contains("square");
 }
-
 export function eatFigure(id: string) {
   const _: Figure = getByID(id);
   _.htmlEl.parentElement.removeChild(_.htmlEl);
@@ -110,4 +109,164 @@ export function pawnMoved(fig: Figure, dest: string): string {
   )
     return "diagonal";
   else return "";
+}
+
+export function isEnPassant(fig: Figure, dest: string): string | null {
+  //if pawn moved to the same file as the last en passant candidate
+  if (ChessBoard.game.lastPossibleEP[0] === dest[0]) {
+    // if the black is trying to move, go to the higher rank
+    if (!fig.isWhite) return dest[0] + (parseInt(dest[1]) + 1);
+    else return dest[0] + (parseInt(dest[1]) - 1);
+  }
+  return null;
+}
+export function getPieceBySquareID(
+  squareID: string
+): string | null | undefined {
+  return document.getElementById(squareID).children[0].id;
+}
+export function hasChildren(squareID: string) {
+  return document.getElementById(squareID).hasChildNodes();
+}
+export function checkSquare(
+  fig: Figure,
+  square: string,
+  possibleSquares: string[]
+) {
+  if (
+    hasChildren(square) &&
+    isWhite(getPieceBySquareID(square)) != fig.isWhite
+  ) {
+    possibleSquares.push(square);
+  } else if (!hasChildren(square)) possibleSquares.push(square);
+  return possibleSquares;
+}
+export function checkPossibleDiagonals(fig: Figure, possibleSquares: string[]) {
+  const rank: number = parseInt(fig.currentPosition[1]);
+  const file: number = ChessBoard.columns.indexOf(fig.currentPosition[0]);
+  let rankBrojac: number = rank + 1;
+  let fileBrojac: number = file + 1;
+
+  //first check upper right corners
+  while (rankBrojac < 9 && fileBrojac < 8) {
+    const square = ChessBoard.columns[fileBrojac] + rankBrojac;
+    if (!hasChildren(square)) {
+      console.log(hasChildren(square));
+
+      possibleSquares.push(square);
+      rankBrojac++;
+      fileBrojac++;
+      continue;
+    } else if (isWhite(getPieceBySquareID(square)) != fig.isWhite) {
+      possibleSquares.push(square);
+      break;
+    } else break;
+  }
+  //check the down left diagonal
+  rankBrojac = rank - 1;
+  fileBrojac = file - 1;
+  while (rankBrojac > 0 && fileBrojac >= 0) {
+    const square = ChessBoard.columns[fileBrojac] + rankBrojac;
+    if (!hasChildren(square)) {
+      possibleSquares.push(square);
+      rankBrojac--;
+      fileBrojac--;
+      continue;
+    } else if (isWhite(getPieceBySquareID(square)) != fig.isWhite) {
+      possibleSquares.push(square);
+      break;
+    } else break;
+  }
+  //check the upper left diagonal
+  rankBrojac = rank + 1;
+  fileBrojac = file - 1;
+  while (rankBrojac < 9 && fileBrojac >= 0) {
+    const square = ChessBoard.columns[fileBrojac] + rankBrojac;
+    if (!hasChildren(square)) {
+      possibleSquares.push(square);
+      rankBrojac++;
+      fileBrojac--;
+      continue;
+    } else if (isWhite(getPieceBySquareID(square)) != fig.isWhite) {
+      possibleSquares.push(square);
+      break;
+    } else break;
+  }
+  //check the down right diagonal
+  rankBrojac = rank - 1;
+  fileBrojac = file + 1;
+  while (rankBrojac > 0 && fileBrojac < 8) {
+    const square = ChessBoard.columns[fileBrojac] + rankBrojac;
+    if (!hasChildren(square)) {
+      possibleSquares.push(square);
+      rankBrojac--;
+      fileBrojac++;
+      continue;
+    } else if (isWhite(getPieceBySquareID(square)) != fig.isWhite) {
+      possibleSquares.push(square);
+      break;
+    } else break;
+  }
+  return possibleSquares;
+}
+export function checkPossibleStraights(fig: Figure, possibleSquares: string[]) {
+  const rank: number = parseInt(fig.currentPosition[1]);
+  const file: number = ChessBoard.columns.indexOf(fig.currentPosition[0]);
+  let rankBrojac: number = rank + 1;
+  let fileBrojac: number = file;
+
+  //check upper column
+  while (rankBrojac < 9) {
+    const square = ChessBoard.columns[fileBrojac] + rankBrojac;
+    if (!hasChildren(square)) {
+      possibleSquares.push(square);
+      rankBrojac++;
+      continue;
+    } else if (isWhite(getPieceBySquareID(square)) != fig.isWhite) {
+      possibleSquares.push(square);
+      break;
+    } else break;
+  }
+  //check column below
+  rankBrojac = rank - 1;
+  while (rankBrojac > 0) {
+    const square = ChessBoard.columns[fileBrojac] + rankBrojac;
+    if (!hasChildren(square)) {
+      possibleSquares.push(square);
+      rankBrojac--;
+      continue;
+    } else if (isWhite(getPieceBySquareID(square)) != fig.isWhite) {
+      possibleSquares.push(square);
+      break;
+    } else break;
+  }
+  //check row to the left
+  rankBrojac = rank;
+  fileBrojac = file - 1;
+  while (fileBrojac >= 0) {
+    const square = ChessBoard.columns[fileBrojac] + rankBrojac;
+    if (!hasChildren(square)) {
+      possibleSquares.push(square);
+      fileBrojac--;
+      continue;
+    } else if (isWhite(getPieceBySquareID(square)) != fig.isWhite) {
+      possibleSquares.push(square);
+      break;
+    } else break;
+  }
+  //check row to the right
+
+  fileBrojac = file + 1;
+  while (fileBrojac < 8) {
+    const square = ChessBoard.columns[fileBrojac] + rankBrojac;
+    if (!hasChildren(square)) {
+      possibleSquares.push(square);
+      fileBrojac++;
+      continue;
+    } else if (isWhite(getPieceBySquareID(square)) != fig.isWhite) {
+      possibleSquares.push(square);
+      break;
+    } else break;
+  }
+  return possibleSquares;
 }

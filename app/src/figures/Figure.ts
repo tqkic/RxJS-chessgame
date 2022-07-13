@@ -4,10 +4,11 @@ export interface Figure {
   readonly id: string;
   readonly isWhite: boolean;
   readonly weight: number;
+  readonly alias: Alias;
   currentPosition: string;
   htmlEl: any;
-  checkPossibleDestinations(fig: Figure): string[];
-  move(dest: string): string;
+  checkPossibleDestinations(): string[];
+  move(dest: string, possibleSquares: string[]): string;
 }
 //eat a figure if it's of opposite color
 export function tryMove(fig: Figure, otherPiece: string, dest: string) {
@@ -18,3 +19,4 @@ export function tryMove(fig: Figure, otherPiece: string, dest: string) {
   moveElement(fig.htmlEl, fig.currentPosition, dest);
   return dest;
 }
+export type Alias = "B" | "Q" | "R" | "N" | "P" | "K";

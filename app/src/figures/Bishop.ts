@@ -1,9 +1,10 @@
-import { Figure, tryMove } from "./Figure";
+import { Alias, Figure, tryMove } from "./Figure";
 import { isDiagonalMove, isChessPiece } from "../figureRules";
 
 export class Bishop implements Figure {
   id: string;
   isWhite: boolean;
+  readonly alias: Alias;
   readonly weight: number;
   currentPosition: string;
   htmlEl: Element;
@@ -14,21 +15,21 @@ export class Bishop implements Figure {
     this.currentPosition = pos;
     this.htmlEl = el;
   }
-  move(dest: string): string {
+  move(dest: string, possibleSquares: string[]): string {
     let otherPiece = null;
     //if there's a chessPiece on the destination, get the square it's in, and remember the figure so that you can eat it
     if (isChessPiece(dest)) {
       otherPiece = dest;
       dest = document.getElementById(dest).parentElement.id;
     }
-    //if there's in fact another piece and it's of opposite color, eat it and move the element
-    if (isDiagonalMove(this, dest)) {
+    if (possibleSquares.includes(dest)) {
       return tryMove(this, otherPiece, dest);
     }
+    //if there's in fact another piece and it's of opposite color, eat it and move the element
     return this.currentPosition;
     //if it's just a regular diagonal move and there's nothing on the destination square, just move
   }
-  checkPossibleDestinations(fig: Figure): string[] {
+  checkPossibleDestinations(): string[] {
     throw new Error("Method not implemented.");
   }
 }

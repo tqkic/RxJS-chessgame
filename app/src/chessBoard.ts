@@ -16,6 +16,7 @@ let whitePlayerTurn: boolean = true;
 export let playsWhite: boolean = false;
 //fixed size of pieces
 const figureSize: number = 67.5;
+let potentialSquares: string[] = [];
 
 const board = document.getElementById("board");
 export let chessPieces: Figure[] = [];
@@ -113,6 +114,10 @@ function createSpan(name: string) {
 }
 function handleDragStart(e: any) {
   draggedFigure = getByID(e.target.id)!;
+  potentialSquares = draggedFigure.checkPossibleDestinations();
+  potentialSquares.forEach((sqr) =>
+    document.getElementById(sqr).classList.add("potential-square")
+  );
   e.target.classList.add("dragging");
 }
 function handleDragging(e: any) {
@@ -145,12 +150,14 @@ function handleDragEnd(e: any) {
   );
   console.log("moving figure " + draggedFigure!.id + " to " + square!.id);
 
-  const tempPos = draggedFigure!.move(square!.id);
+  const tempPos = draggedFigure!.move(square!.id, potentialSquares);
 
   if (draggedFigure!.currentPosition === tempPos) return;
   else draggedFigure!.currentPosition = tempPos;
 
   whitePlayerTurn = !whitePlayerTurn;
+  console.log(ChessBoard.game.movesHistory);
+
   return;
 
   //ChessBoard.player.myTurn = !ChessBoard.player.myTurn;
