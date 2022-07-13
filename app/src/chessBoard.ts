@@ -8,7 +8,7 @@ import { King } from "./figures/King";
 import { Knight } from "./figures/Knight";
 import { Player } from "./models/Player";
 import { Game } from "./models/Game";
-
+import { getGameByID } from "./utils/http-utils";
 //for colors
 let odd: boolean = false;
 let whitePlayerTurn: boolean = true;
@@ -29,6 +29,8 @@ const img: HTMLImageElement = document.createElement("img");
 const imgSource: string = "assets/pieces.png";
 img.src = imgSource;
 
+getGameByID(1).subscribe((game) => console.log(game));
+
 export class ChessBoard {
   private static instance: ChessBoard;
   public static columns = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -39,7 +41,7 @@ export class ChessBoard {
   public static getInstance(): ChessBoard {
     if (!ChessBoard.instance) {
       ChessBoard.instance = new ChessBoard();
-      this.player = { id: 0, playsWhite: true, points: 0, myTurn: true };
+      this.player = { id: "", playsWhite: true, points: 0, myTurn: true };
     }
 
     return ChessBoard.instance;

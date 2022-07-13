@@ -110,7 +110,6 @@ export function pawnMoved(fig: Figure, dest: string): string {
     return "diagonal";
   else return "";
 }
-
 export function isEnPassant(fig: Figure, dest: string): string | null {
   //if pawn moved to the same file as the last en passant candidate
   if (ChessBoard.game.lastPossibleEP[0] === dest[0]) {

@@ -1,5 +1,5 @@
 export interface Player {
-  id: number;
+  id: string;
   playsWhite: boolean;
   points: number;
   myTurn: boolean;

@@ -1,5 +1,14 @@
 import { Alias, Figure, tryMove } from "./Figure";
-import { isChessPiece, moveElement, pawnMoved } from "../figureRules";
+import {
+  eatFigure,
+  getByID,
+  getPieceBySquareID,
+  isChessPiece,
+  isEnPassant,
+  moveElement,
+  pawnMoved,
+} from "../figureRules";
+import { generateMoveString } from "../utils/helper";
 
 export class Pawn implements Figure {
   id: string;
@@ -34,10 +43,24 @@ export class Pawn implements Figure {
     if (pawnMoved(this, dest) === "straight") {
       if (otherPiece) return this.currentPosition;
       moveElement(this.htmlEl, this.currentPosition, dest);
+      console.log(
+        generateMoveString(this, dest, getByID(otherPiece), null, null)
+      );
       return dest;
     }
-    if (pawnMoved(this, dest) === "diagonal" && otherPiece) {
-      return tryMove(this, otherPiece, dest);
+    //en passant check
+    if (pawnMoved(this, dest) === "diagonal") {
+      if (otherPiece) return tryMove(this, otherPiece, dest);
+      const enPassant = isEnPassant(this, dest);
+      if (enPassant) {
+        moveElement(this.htmlEl, this.currentPosition, dest);
+        const piece = getPieceBySquareID(enPassant);
+        eatFigure(piece);
+        console.log(
+          generateMoveString(this, dest, getByID(piece), "en passant", null)
+        );
+      }
+      return dest;
     }
 
     return this.currentPosition;

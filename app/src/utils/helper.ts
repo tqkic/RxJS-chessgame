@@ -2,6 +2,15 @@ import { Figure } from "../figures/Figure";
 import { Pawn } from "../figures/Pawn";
 import { ChessBoard } from "../chessBoard";
 
+export function generateCode(): string {
+  var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  let res: string = "";
+  for (let index = 0; index < 6; index++) {
+    res += characters.charAt(Math.random() * characters.length);
+  }
+  return res;
+}
+
 export function generateMoveString(
   fig: Figure,
   dest: string,

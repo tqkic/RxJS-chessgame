@@ -1,18 +1,31 @@
-const express = require('express');
-const app = express();
-const http = require('http');
-const server = http.createServer(app);
-const { Server } = require("socket.io");
-const io = new Server(server);
+import { instrument } from "@socket.io/admin-ui";
+import { createServer } from "http";
+import { Server } from "socket.io";
 
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
+
+const httpServer = createServer();
+const io = new Server(httpServer, {
+    cors: {
+        origin:
+            ["http://127.0.0.1:5500", "https://admin.socket.io"]
+    }
 });
 
 io.on('connection', (socket) => {
-    console.log('a user ' + socket.id + ' connected');
-});
 
-server.listen(3000, () => {
-    console.log('listening on *:3000');
+    socket.on("join-room", (room, cb) => {
+        socket.join(room);
+        cb(`Joined ${room}`, socket.id);
+    })
+    socket.on("join-room-p2", (room, cb) => {
+        socket.join(room);
+        socket.broadcast.emit("send-id", socket.id);
+        cb(`Joined ${room}`, socket.id);
+    })
+
+    socket.on("send-id", id => {
+        socket.broadcast.emit("send-id2", id);
+    })
 });
+instrument(io, { auth: false });
+httpServer.listen(8000);
